@@ -1,0 +1,58 @@
+#!/bin/sh
+# NSOC chroot setup hook
+# ----------------------
+# Runs *inside* the live system chroot during the build. By this point
+# config/includes.chroot has already deposited the NSOC source tree at
+# /opt/nsoc, the launcher at /usr/local/bin/nsoc and the desktop entry.
+#
+# Responsibilities:
+#   * make the launcher executable
+#   * install Python dependencies (best-effort, offline-tolerant)
+#   * build the React dashboard if a build is defined
+#   * register a friendly login banner
+set -e
+
+echo "I: [nsoc] configuring NSOC in the live image"
+
+NSOC_HOME=/opt/nsoc
+
+# --- launcher + CLI permissions ---------------------------------------
+chmod 0755 /usr/local/bin/nsoc 2>/dev/null || true
+if [ -f "$NSOC_HOME/cli/nsoc.py" ]; then
+    chmod 0755 "$NSOC_HOME/cli/nsoc.py" || true
+fi
+
+# --- Python dependencies ----------------------------------------------
+# NSOC's CLI runs on the Python standard library, so nothing is required
+# by default. If the project later ships a requirements.txt, honour it.
+# Never fail the build on a network hiccup.
+if [ -f "$NSOC_HOME/requirements.txt" ]; then
+    pip3 install --break-system-packages -r "$NSOC_HOME/requirements.txt" || \
+        echo "W: [nsoc] pip install from requirements.txt failed (continuing)"
+fi
+
+# --- Dashboard build (optional) ---------------------------------------
+# Only build if the project provides a package.json with a build script.
+if [ -f "$NSOC_HOME/dashboard/package.json" ]; then
+    echo "I: [nsoc] building dashboard"
+    ( cd "$NSOC_HOME/dashboard" && npm install --no-audit --no-fund && npm run build ) || \
+        echo "W: [nsoc] dashboard build failed (continuing without prebuilt dist)"
+fi
+
+# --- Login banner ------------------------------------------------------
+cat > /etc/motd <<'EOF'
+
+  =====================================================================
+   NSOC  -  Network Security Operations Center  (custom Kali build)
+  =====================================================================
+   Launch the platform :  nsoc
+   List workflows      :  nsoc workflow list
+   Source              :  /opt/nsoc
+  ---------------------------------------------------------------------
+   Authorized use only. SIMULATION mode is the default; LIVE mode runs
+   real tools and must only target systems you are permitted to test.
+  =====================================================================
+
+EOF
+
+echo "I: [nsoc] setup complete"

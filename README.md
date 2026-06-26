@@ -66,6 +66,21 @@ python3 cli/nsoc.py workflow run network-map --target 192.168.1.0/24
 python3 cli/nsoc.py workflow run webapp-audit --target example.com
 ```
 
+## Bootable Kali Linux (USB)
+
+Build a **custom, USB-bootable Kali Linux** with NSOC and its security
+toolchain pre-installed — boot it anywhere, no install required.
+
+```bash
+cd kali-build
+sudo ./build.sh                                  # build the ISO (Debian/Kali host)
+sudo ./flash-usb.sh images/<image>.iso /dev/sdX  # write it to a USB stick
+```
+
+Boot the stick (Live mode) and run `nsoc`. See
+[`kali-build/README.md`](kali-build/README.md) for variants, persistence,
+and customization.
+
 ## Project Structure
 
 ```
@@ -90,6 +105,10 @@ nsoc/
 │   │   └── types/
 │   │       └── index.ts
 │   └── dist/                   # Built dashboard
+├── kali-build/                 # Custom bootable Kali Linux build
+│   ├── build.sh                # Build the ISO (wraps Kali live-build)
+│   ├── flash-usb.sh            # Write the ISO to a USB stick
+│   └── config/                 # Package lists, hooks, file overlays
 └── README.md
 ```
 
