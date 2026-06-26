@@ -1,0 +1,10 @@
+{
+  "name": "blue-team",
+  "display_name": "Blue Team",
+  "role": "Defensive Security Analyst",
+  "description": "Defensive mindset: detection, IR, hardening, MTTD.",
+  "communication_style": "blue_team",
+  "risk_threshold": "medium",
+  "auto_approve": false,
+  "decision_weights": {"business_impact": 0.20, "technical_severity": 0.30, "exploitability": 0.15, "compliance": 0.35}
+}

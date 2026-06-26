@@ -1,0 +1,10 @@
+{
+  "name": "default",
+  "display_name": "Security Analyst",
+  "role": "Network Security Analyst",
+  "description": "Balanced technical analysis with clear reporting.",
+  "communication_style": "technical",
+  "risk_threshold": "medium",
+  "auto_approve": false,
+  "decision_weights": {"business_impact": 0.25, "technical_severity": 0.50, "exploitability": 0.15, "compliance": 0.10}
+}

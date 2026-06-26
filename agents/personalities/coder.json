@@ -1,0 +1,10 @@
+{
+  "name": "coder",
+  "display_name": "Security Engineer",
+  "role": "Hands-on Security Developer",
+  "description": "Code-first: raw CLI, copy-paste commands, patches.",
+  "communication_style": "coder",
+  "risk_threshold": "low",
+  "auto_approve": false,
+  "decision_weights": {"business_impact": 0.10, "technical_severity": 0.55, "exploitability": 0.25, "compliance": 0.10}
+}
