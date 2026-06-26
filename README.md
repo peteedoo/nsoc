@@ -1,105 +1,97 @@
 # NSOC - Network Security Operations Center
 
-**NSOC** is a hybrid learning lab & production security platform that integrates 5 security skills into a unified workflow engine with personality-driven AI agents. It operates in two modes: **SIMULATION** (safe learning environment) and **LIVE** (real-world security operations).
+**NSOC** is a hybrid learning lab & production security platform with **Defense Mode** — it doesn't just find issues, it teaches you how to fix them. Integrates 5 security skills into a unified workflow engine with personality-driven AI agents.
 
 [![Dashboard](https://img.shields.io/badge/Dashboard-Live-success)](https://xlkd3tzcyhrtk.kimi.page)
-[![Version](https://img.shields.io/badge/version-2.0.0-blue)](https://github.com/peteedoo/nsoc)
-[![License](https://img.shields.io/badge/license-MIT-green)]()
+[![Version](https://img.shields.io/badge/version-2.1.0-blue)](https://github.com/peteedoo/nsoc)
+[![Guides](https://img.shields.io/badge/remediation_guides-17-orange)](https://github.com/peteedoo/nsoc)
+
+## What's New in v2.1 — Defense Mode
+
+NSOC now includes a **Defense & Remediation** tab that transforms every finding into a learning opportunity:
+
+- **17 Detailed Remediation Guides** covering network, web app, code, TLS, and monitoring issues
+- **Side-by-side Code Comparisons** — see vulnerable code next to the fixed version
+- **Step-by-step Fix Instructions** with completion tracking
+- **Learning Paths** — Beginner → Intermediate → Advanced progressions
+- **Active Findings** — auto-matches scan results to relevant remediation guides
+- **Why It Matters** — real-world context for every vulnerability
+- **Verification Commands** — test that your fix actually worked
 
 ## Features
 
-- **Dual-Mode Operation**: SIMULATION for safe learning, LIVE for authorized real-world ops
-- **5 Integrated Security Skills**: pentest-ai-agents, pentest-ai, nmap-mcp, security-dashboard, web-security-audit, code-vuln-audit
-- **5 Agent Personalities**: Security Analyst, CEO, Security Engineer, Red Team, Blue Team
-- **6 Pre-built Workflows**: Network Mapping, WebApp Audit, Traffic Analysis, Full Pentest, Code Security, Blue Team Monitoring
-- **Web Dashboard**: React-based dark theme UI with real-time terminal
-- **Python CLI**: Full terminal interface for scripting and automation
+### Dual-Mode Operation
+- **SIMULATION** — Safe learning environment with realistic results
+- **LIVE** — Real security tools on authorized targets
+
+### 5 Agent Personalities
+| Personality | Role | Focus |
+|---|---|---|
+| **Default** | Security Analyst | Balanced technical analysis |
+| **CEO** | Executive | Business impact, dollars, ROI |
+| **Coder** | Security Engineer | Raw CLI, code fixes, patches |
+| **Red Team** | Offensive Operator | Exploit chaining, lateral movement |
+| **Blue Team** | Defender | Detection, IR, hardening |
+
+### 6 Security Workflows
+- Network Discovery & Mapping
+- Web Application Security Audit
+- Traffic Analysis & Monitoring
+- Full Penetration Test
+- Code Security Assessment
+- Blue Team Monitoring Setup
+
+### Remediation Coverage (17 Guides)
+| Category | Guides |
+|---|---|
+| **Network** | Exposed MySQL, SSH hardening, RDP filtering, Kernel updates |
+| **Web App** | SQL injection, XSS, Exposed .env files |
+| **Code Security** | Vulnerable deps, Exposed secrets, Weak hashing, Deserialization, Debug mode |
+| **TLS** | Weak ciphers, Certificate expiry |
+| **Monitoring** | Port scan response, Unencrypted auth |
 
 ## Quick Start
 
-### Dashboard (Web UI)
-
-The web dashboard is deployed and accessible at:
+### Web Dashboard
 **https://xlkd3tzcyhrtk.kimi.page**
 
-### CLI
+Click the **Defense** (shield) icon in the sidebar to enter Defense Mode.
 
+### CLI
 ```bash
-# Run the CLI
 python3 cli/nsoc.py
 
-# Or with commands
-python3 cli/nsoc.py status
-python3 cli/nsoc.py workflow list
+# Run a scan then see remediation
 python3 cli/nsoc.py workflow run network-map --target 192.168.1.0/24
-python3 cli/nsoc.py agent set red-team
-python3 cli/nsoc.py mode live
+python3 cli/nsoc.py workflow run webapp-audit --target example.com
 ```
-
-## Agent Personalities
-
-| Personality | Role | Focus | Auto-Approve |
-|---|---|---|---|
-| **Default** | Security Analyst | Balanced technical analysis | No |
-| **CEO** | Executive | Business impact, dollars, ROI | No |
-| **Coder** | Security Engineer | Raw CLI, code fixes, patches | No |
-| **Red Team** | Offensive Operator | Exploit chaining, lateral movement | Yes |
-| **Blue Team** | Defender | Detection, IR, hardening | No |
-
-## Workflows
-
-| Workflow | Category | Steps | Description |
-|---|---|---|---|
-| `network-map` | Network | 4 | Host discovery, port scan, service detection, OS fingerprinting |
-| `webapp-audit` | WebApp | 5 | OWASP Top 10 assessment with code scanning |
-| `traffic-analysis` | Network | 3 | PCAP capture, protocol analysis, anomaly detection |
-| `full-pentest` | Offensive | 5 | Complete pentest from recon to post-exploitation |
-| `code-security` | Code | 3 | Dependency, secret, and OWASP pattern scanning |
-| `blue-team-monitor` | Monitoring | 4 | Gateway, surface, TLS, and resource monitoring |
 
 ## Project Structure
 
 ```
 nsoc/
-├── core/
-│   └── engine.py          # Central orchestration engine
-├── agents/
-│   └── personalities/
-│       ├── default.json    # Security Analyst
-│       ├── ceo.json        # Executive
-│       ├── coder.json      # Security Engineer
-│       ├── red-team.json   # Offensive Operator
-│       └── blue-team.json  # Defender
-├── cli/
-│   └── nsoc.py            # Python CLI
-├── dashboard/             # React web dashboard
+├── core/engine.py              # Orchestration engine
+├── cli/nsoc.py                 # Terminal CLI
+├── agents/personalities/       # 5 personality JSON files
+├── dashboard/
 │   ├── src/
-│   │   ├── App.tsx
+│   │   ├── App.tsx             # Main app with 7 views
 │   │   ├── sections/
 │   │   │   ├── DashboardView.tsx
 │   │   │   ├── WorkflowsView.tsx
 │   │   │   ├── TerminalView.tsx
 │   │   │   ├── ResultsView.tsx
 │   │   │   ├── SkillsView.tsx
+│   │   │   ├── RemediationView.tsx   # NEW: Defense mode
 │   │   │   └── SettingsView.tsx
-│   │   ├── components/
-│   │   │   ├── ModeToggle.tsx
-│   │   │   └── PersonalitySelector.tsx
 │   │   ├── lib/
-│   │   │   └── data.ts
+│   │   │   ├── data.ts         # Simulation data
+│   │   │   └── remediation.ts  # NEW: 17 remediation guides
 │   │   └── types/
 │   │       └── index.ts
-│   └── dist/              # Built dashboard
+│   └── dist/                   # Built dashboard
 └── README.md
 ```
-
-## Safety & Ethics
-
-- **SIMULATION mode** is safe for learning - all operations are simulated
-- **LIVE mode** requires explicit authorization - real tools execute on real targets
-- Only use LIVE mode on systems you own or have written authorization to test
-- Scope guardrails are active in LIVE mode
-- Red Team personality auto-approves steps - use with caution
 
 ## License
 
