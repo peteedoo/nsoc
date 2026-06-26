@@ -1,0 +1,64 @@
+# NSOC custom Kali package list
+# ------------------------------
+# These packages are installed into the chroot in addition to the
+# variant's default package set. Keep this list focused: every package
+# adds to the image size and the build time.
+
+## --- NSOC runtime ---
+python3
+python3-pip
+python3-venv
+python3-rich
+git
+nodejs
+npm
+jq
+curl
+wget
+
+## --- Reconnaissance / discovery (used by NSOC workflows) ---
+nmap
+masscan
+dnsutils
+whois
+amass
+dnsrecon
+fierce
+
+## --- Web application testing ---
+sqlmap
+nikto
+gobuster
+ffuf
+dirb
+whatweb
+wpscan
+nuclei
+
+## --- Traffic analysis / monitoring ---
+tshark
+tcpdump
+termshark
+
+## --- Credential / brute-force ---
+hydra
+john
+hashcat
+
+## --- Exploitation / framework ---
+metasploit-framework
+netcat-traditional
+socat
+
+## --- SMB / AD enumeration ---
+smbclient
+enum4linux
+crackmapexec
+
+## --- Quality-of-life on the live system ---
+tmux
+vim
+htop
+net-tools
+iproute2
+ca-certificates
