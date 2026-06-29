@@ -1,43 +1,50 @@
 # NSOC - Network Security Operations Center
 
-[![Dashboard](https://img.shields.io/badge/Dashboard-Live-success)](https://xlkd3tzcyhrtk.kimi.page)
-[![Version](https://img.shields.io/badge/version-2.1.0-blue)](https://github.com/peteedoo/nsoc)
-[![PWA](https://img.shields.io/badge/Install-PWA-purple)](https://xlkd3tzcyhrtk.kimi.page)
-[![Guides](https://img.shields.io/badge/remediation_guides-17-orange)]()
+**Live App:** https://xlkd3tzcyhrtk.kimi.page
 
-**NSOC** is a hybrid learning lab & production security platform with **Defense Mode** — it doesn't just find issues, it teaches you how to fix them. Now available as an **installable mobile PWA**.
+Hybrid security learning lab & production platform. Installable PWA with 5 agent personalities, 6 workflows, 17 defense guides, and dual-mode operation.
 
 ## Install on Your Phone
 
-### Android (Chrome)
-1. Open **https://xlkd3tzcyhrtk.kimi.page** in Chrome
-2. Tap the **"Install NSOC"** banner at the bottom (or Menu → "Add to Home Screen")
-3. NSOC appears on your home screen like a native app
+**Android (Chrome):** Open the link → tap "Install NSOC" banner
 
-### iPhone (Safari)
-1. Open **https://xlkd3tzcyhrtk.kimi.page** in Safari
-2. Tap the **Share** button at the bottom
-3. Scroll down and tap **"Add to Home Screen"**
-4. NSOC appears on your home screen
+**iPhone (Safari):** Open the link → Share → "Add to Home Screen"
 
-### Features
-- Works **offline** — cached content available without internet
-- **Standalone** app experience (no browser chrome)
-- **Touch-optimized** bottom navigation for phones
-- **Safe-area** support for notched screens (iPhone X+)
-- **Portrait** orientation optimized
+## What's New in v2.2
 
-## Defense Mode (v2.1)
+### Persistence
+Your preferences are saved automatically: mode (SIM/LIVE), personality, active view, completed remediation steps, and visited guides. Everything survives browser restarts.
 
-17 remediation guides that teach you how to fix every issue:
-- **Side-by-side code** — vulnerable vs fixed
-- **Step-by-step fixes** with checkbox tracking
-- **Learning paths** — Beginner → Intermediate → Advanced
-- **Active findings** — auto-matched to scan results
+### Global Search (Ctrl+K)
+Search across all workflows, remediation guides, and skills from anywhere in the app. Results are instant and categorized by type.
+
+### Onboarding Flow
+First-time users see a 5-slide walkthrough covering: welcome, dual-mode operation, personality-driven agents, defense mode, and mobile installation. Ends with a personality picker.
+
+### Refined Mobile UX
+- **Bottom navigation** with 5 primary tabs (Dash, Flows, Term, Defend, Findings)
+- **Active indicators** — subtle top-line highlight on the active tab
+- **Touch-optimized** — 44px+ tap targets, active state feedback
+- **Responsive grids** — auto-collapse to single column on phones
+- **Animations** — fadeIn, slideUp, stagger on all views
+
+### Visual Polish
+- Card hover effects with subtle lift
+- Custom thin scrollbar
+- Backdrop blur on overlays
+- Focus-visible rings for accessibility
+- Staggered entry animations on lists
 
 ## Architecture
 
-5 security skills | 5 agent personalities | 6 workflows | 2 operation modes (SIM/LIVE) | 17 remediation guides
+| Layer | Components |
+|---|---|
+| **Core** | Python engine with async workflow execution |
+| **CLI** | Full terminal interface (`nsoc.py`) |
+| **Dashboard** | React + TypeScript + Tailwind + Recharts |
+| **Agents** | 5 JSON personality files |
+| **Skills** | pentest-ai-agents, pentest-ai, nmap-mcp, security-dashboard, web-security-audit, code-vuln-audit |
+| **PWA** | Service worker, manifest, 8 icon sizes, offline support |
 
 ## License
 
