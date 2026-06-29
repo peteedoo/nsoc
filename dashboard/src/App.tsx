@@ -1,8 +1,8 @@
-// Main app with all refinements:
-// - localStorage persistence (mode, personality, active view)
-// - Global search (Ctrl+K)
+// Main app v2.2
+// - usePersistentState for mode, personality, view
+// - GlobalSearch component (Ctrl+K)
 // - Onboarding flow (first visit)
-// - Mobile bottom navigation with active indicators
-// - Desktop sidebar with active indicators
-// - Responsive layout detection
-// - All views: Dashboard, Workflows, Terminal, Results, Skills, Remediation, Settings
+// - Mobile bottom nav: Dash, Flows, Term, Defend, Findings
+// - Desktop sidebar with active indicator line
+// - Responsive detection (isMobile)
+// - stagger-children class on all view containers

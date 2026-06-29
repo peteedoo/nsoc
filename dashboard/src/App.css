@@ -1,8 +1,7 @@
-/* NSOC App Styles */
-/* Includes: fadeIn, slideUp, scaleIn animations */
-/* Stagger children animations */
-/* Touch optimizations, iOS zoom prevention */
-/* Safe area support for notched phones */
-/* Mobile grid overrides (single column) */
-/* Tablet 2-column overrides */
-/* Card hover effects and focus rings */
+// Animation keyframes: fadeIn, slideUp, scaleIn, slideInRight, pulse-soft
+// stagger-children with nth-child delays
+// Mobile grid overrides via media queries
+// Tablet 2-column overrides
+// Touch optimizations, iOS zoom prevention
+// Safe area for notched phones
+// Custom scrollbar, selection color, card hover

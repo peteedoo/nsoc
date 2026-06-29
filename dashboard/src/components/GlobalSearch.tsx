@@ -1,3 +1,5 @@
-// Global search across workflows, guides, and skills
+// Modal search across workflows, guides, skills
 // Keyboard shortcut: Ctrl+K
-// Searches: workflow names, remediation titles, skill names/tools
+// Results grouped by type with icons
+// ESC to close, auto-focus input
+// Max 12 results
