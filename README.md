@@ -1,56 +1,44 @@
 # NSOC - Network Security Operations Center
 
-**NSOC** is a hybrid learning lab & production security platform with **Defense Mode** — it doesn't just find issues, it teaches you how to fix them. Integrates 5 security skills into a unified workflow engine with personality-driven AI agents.
+**Live:** https://xlkd3tzcyhrtk.kimi.page
 
-[![Dashboard](https://img.shields.io/badge/Dashboard-Live-success)](https://xlkd3tzcyhrtk.kimi.page)
-[![Version](https://img.shields.io/badge/version-2.1.0-blue)](https://github.com/peteedoo/nsoc)
-[![Guides](https://img.shields.io/badge/remediation_guides-17-orange)](https://github.com/peteedoo/nsoc)
+Hybrid security learning lab & production platform. Installable PWA.
 
-## What's New in v2.1 — Defense Mode
+## Install on Your Phone
 
-NSOC now includes a **Defense & Remediation** tab that transforms every finding into a learning opportunity:
+**Android:** Open link in Chrome → tap "Install NSOC"
 
-- **17 Detailed Remediation Guides** covering network, web app, code, TLS, and monitoring issues
-- **Side-by-side Code Comparisons** — see vulnerable code next to the fixed version
-- **Step-by-step Fix Instructions** with completion tracking
-- **Learning Paths** — Beginner → Intermediate → Advanced progressions
-- **Active Findings** — auto-matches scan results to relevant remediation guides
-- **Why It Matters** — real-world context for every vulnerability
-- **Verification Commands** — test that your fix actually worked
+**iPhone:** Open link in Safari → Share → "Add to Home Screen"
 
-## Features
+## v2.2 Refinements
 
-### Dual-Mode Operation
-- **SIMULATION** — Safe learning environment with realistic results
-- **LIVE** — Real security tools on authorized targets
+### Responsive-First Layouts
+All 7 views now use mobile-first responsive grids:
+- **Dashboard**: 2-col stats → 4-col desktop, stacked charts, 2-3-6 col skills
+- **Workflows**: Single column → 3-column split-pane on desktop
+- **Results**: 2-col risk cards → 5-col desktop
+- **Skills**: Single column → 2-column cards, grid architecture diagram
+- **Settings**: Stacked → 2-column mode cards, centered max-width
 
-### 5 Agent Personalities
-| Personality | Role | Focus |
-|---|---|---|
-| **Default** | Security Analyst | Balanced technical analysis |
-| **CEO** | Executive | Business impact, dollars, ROI |
-| **Coder** | Security Engineer | Raw CLI, code fixes, patches |
-| **Red Team** | Offensive Operator | Exploit chaining, lateral movement |
-| **Blue Team** | Defender | Detection, IR, hardening |
+### Persistence
+- Mode, personality, active view saved to localStorage
+- Remediation step completion persists across sessions
+- Onboarding shown only once
 
-### 6 Security Workflows
-- Network Discovery & Mapping
-- Web Application Security Audit
-- Traffic Analysis & Monitoring
-- Full Penetration Test
-- Code Security Assessment
-- Blue Team Monitoring Setup
+### Global Search (Ctrl+K)
+Search across all workflows, remediation guides, and skills.
 
-### Remediation Coverage (17 Guides)
-| Category | Guides |
-|---|---|
-| **Network** | Exposed MySQL, SSH hardening, RDP filtering, Kernel updates |
-| **Web App** | SQL injection, XSS, Exposed .env files |
-| **Code Security** | Vulnerable deps, Exposed secrets, Weak hashing, Deserialization, Debug mode |
-| **TLS** | Weak ciphers, Certificate expiry |
-| **Monitoring** | Port scan response, Unencrypted auth |
+### Onboarding
+5-slide walkthrough for first-time users ending with personality picker.
 
-## Quick Start
+### Animations
+- fadeIn on view transitions
+- stagger-children with progressive delays
+- Card hover lift effect
+- Backdrop blur on overlays
+
+### Navigation Labels
+Dash · Flows · Term · Defend · Findings (mobile bottom nav)
 
 ### Web Dashboard
 **https://xlkd3tzcyhrtk.kimi.page**
@@ -113,5 +101,4 @@ nsoc/
 ```
 
 ## License
-
 MIT
