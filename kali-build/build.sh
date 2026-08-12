@@ -3,7 +3,7 @@
 # build.sh - Build a custom, USB-bootable Kali Linux ISO with NSOC baked in.
 #
 # This wraps Kali's official live-build framework. It clones (or reuses)
-# kali/build-scripts/live-build-config, layers the NSOC customizations from
+# kalilinux/build-scripts/kali-live, layers the NSOC customizations from
 # this directory's ./config tree on top of kali-config/common, stages the
 # NSOC source into the image, and runs the build.
 #
@@ -29,11 +29,13 @@ REPO_ROOT="$(cd "$HERE/.." && pwd)"
 VARIANT="xfce"                 # kali desktop flavour (xfce|gnome|kde|...)
 ARCH="$(dpkg --print-architecture 2>/dev/null || echo amd64)"
 DISTRIBUTION="kali-rolling"
-LBC_REPO="${LBC_REPO:-https://gitlab.com/kali/build-scripts/live-build-config.git}"
-LBC_DIR="$HERE/live-build-config"
-# Pin the upstream live-build-config to a known ref (branch, tag, or full
-# commit SHA). Override with --lbc-ref or the LBC_REF env var to pin a
-# specific reviewed commit for reproducible, verifiable builds.
+# Kali's official custom-live-ISO build config (see
+# https://www.kali.org/docs/development/live-build-a-custom-kali-iso/).
+LBC_REPO="${LBC_REPO:-https://gitlab.com/kalilinux/build-scripts/kali-live.git}"
+LBC_DIR="$HERE/kali-live"
+# Pin the upstream build config to a known ref (branch, tag, or full commit
+# SHA). Override with --lbc-ref or the LBC_REF env var to pin a specific
+# reviewed commit for reproducible, verifiable builds.
 LBC_REF="${LBC_REF:-main}"
 DO_CLEAN=0
 
@@ -75,7 +77,7 @@ if [ -n "$missing" ]; then
 fi
 
 # --------------------------------------------------------------------------
-# Obtain Kali's live-build-config base
+# Obtain Kali's kali-live build config base
 # --------------------------------------------------------------------------
 if [ "$DO_CLEAN" -eq 1 ] && [ -d "$LBC_DIR" ]; then
     log "Cleaning previous live-build workspace"
@@ -84,7 +86,7 @@ if [ "$DO_CLEAN" -eq 1 ] && [ -d "$LBC_DIR" ]; then
 fi
 
 if [ ! -d "$LBC_DIR/.git" ]; then
-    log "Cloning Kali live-build-config ($LBC_REPO @ $LBC_REF)"
+    log "Cloning Kali kali-live build config ($LBC_REPO @ $LBC_REF)"
     # Fetch only the pinned ref. Works for a branch, tag, or full commit SHA.
     git clone --no-checkout "$LBC_REPO" "$LBC_DIR"
     if ! git -C "$LBC_DIR" checkout --quiet "$LBC_REF"; then
@@ -92,17 +94,17 @@ if [ ! -d "$LBC_DIR/.git" ]; then
         git -C "$LBC_DIR" checkout --quiet FETCH_HEAD
     fi
 else
-    log "Reusing existing live-build-config at $LBC_DIR"
+    log "Reusing existing kali-live build config at $LBC_DIR"
 fi
 
 # Record exactly what upstream code will run, so a build is auditable and
 # reproducible. apt/live-build themselves verify the Kali archive via the
 # signed kali-archive-keyring; this pin covers the build tooling on top.
 LBC_HEAD="$(git -C "$LBC_DIR" rev-parse HEAD 2>/dev/null || echo unknown)"
-log "Using live-build-config commit: $LBC_HEAD"
+log "Using kali-live build config commit: $LBC_HEAD"
 
 COMMON="$LBC_DIR/kali-config/common"
-[ -d "$COMMON" ] || die "Unexpected live-build-config layout: $COMMON not found"
+[ -d "$COMMON" ] || die "Unexpected kali-live layout: $COMMON not found"
 
 # --------------------------------------------------------------------------
 # Layer NSOC customizations onto kali-config/common

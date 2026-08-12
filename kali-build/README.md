@@ -52,9 +52,11 @@ sudo ./build.sh --arch amd64            # amd64 | arm64
 sudo ./build.sh --clean                 # wipe the workspace and rebuild
 ```
 
-The first run clones Kali's `live-build-config`, applies the NSOC overlay,
-stages the NSOC source into `/opt/nsoc` inside the image, then runs the
-build (30–90 min). The finished ISO is copied to `kali-build/images/`.
+The first run clones Kali's official [`kali-live`](https://gitlab.com/kalilinux/build-scripts/kali-live)
+build config, applies the NSOC overlay, stages the NSOC source into
+`/opt/nsoc` inside the image, then runs the build (30–90 min). The finished
+ISO is copied to `kali-build/images/`. Pin a specific upstream commit with
+`--lbc-ref <sha>` for a reproducible build.
 
 ## Write to USB
 
