@@ -103,6 +103,13 @@ fi
 LBC_HEAD="$(git -C "$LBC_DIR" rev-parse HEAD 2>/dev/null || echo unknown)"
 log "Using kali-live build config commit: $LBC_HEAD"
 
+# Optional supply-chain gate: set LBC_EXPECT to the full commit SHA you have
+# reviewed. The build then refuses to run any other upstream revision as
+# root. Without it (the default), the resolved commit is still logged above.
+if [ -n "${LBC_EXPECT:-}" ] && [ "$LBC_EXPECT" != "$LBC_HEAD" ]; then
+    die "live-build-config HEAD $LBC_HEAD does not match expected $LBC_EXPECT. Refusing."
+fi
+
 COMMON="$LBC_DIR/kali-config/common"
 [ -d "$COMMON" ] || die "Unexpected kali-live layout: $COMMON not found"
 
@@ -130,19 +137,26 @@ mkdir -p "$NSOC_DEST"
 # be baked into a world-readable, distributable ISO. The build tooling in
 # kali-build/ is not needed inside the image, so it is excluded.
 if git -C "$REPO_ROOT" rev-parse --git-dir >/dev/null 2>&1; then
+    # Exclude the build tooling itself. Both patterns are needed: the bare
+    # name drops the directory entry, and the glob drops its children on
+    # extract (GNU tar tests each member independently).
     git -C "$REPO_ROOT" archive --format=tar HEAD \
-        | tar -x -C "$NSOC_DEST" --exclude='kali-build'
+        | tar -x -C "$NSOC_DEST" --exclude='kali-build' --exclude='kali-build/*'
 else
     warn "$REPO_ROOT is not a git checkout; falling back to a filtered copy."
-    warn "Review the staged tree for secrets before distributing the ISO."
+    warn "A denylist can never be exhaustive — review the staged tree for"
+    warn "secrets before distributing the ISO, or build from a clean checkout."
     rsync -a --delete \
         --exclude '.git' \
         --exclude 'kali-build' \
         --exclude 'node_modules' \
         --exclude 'dashboard/dist' \
         --exclude '.env' --exclude '.env.*' \
-        --exclude '*.pem' --exclude '*.key' --exclude 'id_rsa*' \
-        --exclude '*.p12' --exclude '*.pfx' \
+        --exclude '*.pem' --exclude '*.key' --exclude '*.crt' \
+        --exclude 'id_rsa*' --exclude 'id_ed25519*' --exclude '.ssh' \
+        --exclude '*.p12' --exclude '*.pfx' --exclude '*.kdbx' \
+        --exclude '*.ovpn' --exclude '.npmrc' --exclude '.netrc' \
+        --exclude 'secrets.*' --exclude '*.log' --exclude '.*_history' \
         "$REPO_ROOT"/ "$NSOC_DEST"/
 fi
 

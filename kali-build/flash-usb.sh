@@ -42,10 +42,13 @@ fi
 [ -b "$DEV" ] || die "Not a block device: $DEV"
 
 # --- Safety checks --------------------------------------------------------
-# Refuse partitions (we write the whole disk).
-case "$DEV" in
-    *[0-9]) die "Refusing to write to what looks like a partition ($DEV). Pass the whole disk, e.g. /dev/sdb." ;;
-esac
+# Refuse anything that is not a whole disk. A name-based check would wrongly
+# reject NVMe/SD/eMMC whole disks (nvme0n1, mmcblk0) whose names end in a
+# digit, so ask the kernel for the device type instead.
+DEV_TYPE="$(lsblk -dno TYPE "$DEV" 2>/dev/null | head -n1 || echo '')"
+if [ "$DEV_TYPE" != "disk" ]; then
+    die "Refusing to write to $DEV (type='${DEV_TYPE:-unknown}'). Pass a whole disk, e.g. /dev/sdb or /dev/nvme0n1."
+fi
 
 DEV_BASE="$(basename "$DEV")"
 
