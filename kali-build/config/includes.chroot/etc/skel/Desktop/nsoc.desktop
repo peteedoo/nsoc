@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=NSOC
+GenericName=Network Security Operations Center
+Comment=Hybrid security learning lab & operations platform
+Exec=x-terminal-emulator -e nsoc
+Icon=utilities-terminal
+Terminal=false
+Categories=System;Security;
+Keywords=security;pentest;nsoc;soc;

@@ -42,6 +42,7 @@ class OperationResult:
     findings: List[Dict] = field(default_factory=list)
     risk_level: str = "info"  # info, low, medium, high, critical
     persona_adapted_output: str = ""  # Output adapted by personality
+    step_id: str = ""  # Workflow step this result belongs to
 
 
 @dataclass
@@ -145,20 +146,20 @@ class NSOCEngine:
             "category": "webapp",
             "steps": [
                 {"id": "wa-1", "name": "Reconnaissance", "skill": "pentest-ai-agents",
-                 "tool": "recon-advisor", "command": "ptai recon {target}",
+                 "tool": "recon-advisor", "command": "whatweb {target}",
                  "description": "Initial reconnaissance and discovery"},
                 {"id": "wa-2", "name": "OWASP Top 10 Scan", "skill": "web-security-audit",
-                 "tool": "owasp-a03", "command": "ptai scan --owasp {target}",
+                 "tool": "owasp-a03", "command": "nikto -h {target}",
                  "description": "Check for injection vulnerabilities", "depends_on": ["wa-1"]},
                 {"id": "wa-3", "name": "XSS Testing", "skill": "web-security-audit",
-                 "tool": "owasp-a03", "command": "ptai xss --target {target}",
+                 "tool": "owasp-a03", "command": "nuclei -u {target} -tags xss",
                  "description": "Test for cross-site scripting", "depends_on": ["wa-1"]},
                 {"id": "wa-4", "name": "Auth Testing", "skill": "web-security-audit",
-                 "tool": "owasp-a07", "command": "ptai auth --target {target}",
+                 "tool": "owasp-a07", "command": "nuclei -u {target} -tags default-login,exposure",
                  "description": "Test authentication mechanisms", "depends_on": ["wa-1"]},
-                {"id": "wa-5", "name": "Code Scan", "skill": "code-vuln-audit",
-                 "tool": "owasp-pattern-scan", "command": "nsoc-scan code --target {target}",
-                 "description": "Scan source code for vulnerabilities", "depends_on": ["wa-1"]},
+                {"id": "wa-5", "name": "Content Discovery", "skill": "web-security-audit",
+                 "tool": "owasp-pattern-scan", "command": "gobuster dir -u {target} -w /usr/share/wordlists/dirb/common.txt -q",
+                 "description": "Discover hidden paths and endpoints", "depends_on": ["wa-1"]},
             ]
         },
         "traffic-analysis": {
@@ -170,10 +171,10 @@ class NSOCEngine:
                  "tool": "traffic-analyzer", "command": "tcpdump -i any -w capture.pcap",
                  "description": "Capture network traffic to pcap file"},
                 {"id": "ta-2", "name": "Protocol Analysis", "skill": "pentest-ai-agents",
-                 "tool": "traffic-analyzer", "command": "ptai traffic --analyze capture.pcap",
+                 "tool": "traffic-analyzer", "command": "tshark -r capture.pcap -q -z io,phs",
                  "description": "Analyze protocols and extract metadata", "depends_on": ["ta-1"]},
                 {"id": "ta-3", "name": "Anomaly Detection", "skill": "security-dashboard",
-                 "tool": "network-security", "command": "nsoc-monitor anomalies --pcap capture.pcap",
+                 "tool": "network-security", "command": "tshark -r capture.pcap -q -z conv,ip",
                  "description": "Detect traffic anomalies and patterns", "depends_on": ["ta-2"]},
             ]
         },
@@ -183,7 +184,7 @@ class NSOCEngine:
             "category": "offensive",
             "steps": [
                 {"id": "pt-1", "name": "Network Recon", "skill": "pentest-ai-agents",
-                 "tool": "recon-advisor", "command": "ptai recon --full {target}",
+                 "tool": "recon-advisor", "command": "nmap -sn {target}",
                  "description": "Comprehensive reconnaissance"},
                 {"id": "pt-2", "name": "Port & Service Scan", "skill": "nmap-mcp",
                  "tool": "port-scan-syn", "command": "nmap -sS -sV -A -p- {target}",
@@ -192,10 +193,10 @@ class NSOCEngine:
                  "tool": "nuclei", "command": "nuclei -u {target} -severity critical,high",
                  "description": "Vulnerability assessment", "depends_on": ["pt-2"]},
                 {"id": "pt-4", "name": "Web App Testing", "skill": "web-security-audit",
-                 "tool": "owasp-a03", "command": "ptai web --full {target}",
+                 "tool": "owasp-a03", "command": "nikto -h {target}",
                  "description": "Web application penetration testing", "depends_on": ["pt-2"]},
                 {"id": "pt-5", "name": "Traffic Analysis", "skill": "pentest-ai-agents",
-                 "tool": "traffic-analyzer", "command": "ptai traffic --capture {target}",
+                 "tool": "traffic-analyzer", "command": "tcpdump -i any -c 1000 -w capture.pcap host {target}",
                  "description": "Capture and analyze traffic", "depends_on": ["pt-3", "pt-4"]},
             ]
         },
@@ -205,13 +206,13 @@ class NSOCEngine:
             "category": "code",
             "steps": [
                 {"id": "cs-1", "name": "Dependency Scan", "skill": "code-vuln-audit",
-                 "tool": "deps-scan", "command": "nsoc-scan deps {target}",
+                 "tool": "deps-scan", "command": "grep -rInsE '(==|>=|<=|~=|dependencies|require)' {target}",
                  "description": "Scan for vulnerable dependencies", "requires_approval_in_live": False},
                 {"id": "cs-2", "name": "Secret Detection", "skill": "code-vuln-audit",
-                 "tool": "secrets-scan", "command": "nsoc-scan secrets {target}",
+                 "tool": "secrets-scan", "command": "grep -rInsE '(AKIA[0-9A-Z]+|api[_-]?key|secret|password|passwd|token|PRIVATE KEY)' {target}",
                  "description": "Find leaked secrets and credentials", "requires_approval_in_live": False},
                 {"id": "cs-3", "name": "OWASP Pattern Scan", "skill": "code-vuln-audit",
-                 "tool": "owasp-pattern-scan", "command": "nsoc-scan owasp {target}",
+                 "tool": "owasp-pattern-scan", "command": "grep -rInsE '(eval|exec|os.system|subprocess|pickle.loads|md5|SELECT.*FROM)' {target}",
                  "description": "Detect OWASP anti-patterns in code", "depends_on": ["cs-1", "cs-2"]},
             ]
         },
@@ -221,16 +222,16 @@ class NSOCEngine:
             "category": "monitoring",
             "steps": [
                 {"id": "bt-1", "name": "Gateway Monitor", "skill": "security-dashboard",
-                 "tool": "gateway-monitor", "command": "nsoc-monitor gateway --enable",
+                 "tool": "gateway-monitor", "command": "ss -tulpn",
                  "description": "Monitor gateway status and traffic", "requires_approval_in_live": False},
                 {"id": "bt-2", "name": "Exposed Surface Scan", "skill": "security-dashboard",
-                 "tool": "exposed-surface", "command": "nsoc-monitor surface --scan {target}",
+                 "tool": "exposed-surface", "command": "nmap -sV --open {target}",
                  "description": "Scan for exposed attack surfaces"},
                 {"id": "bt-3", "name": "TLS Certificate Monitor", "skill": "security-dashboard",
-                 "tool": "tls-monitor", "command": "nsoc-monitor tls --watch {target}",
+                 "tool": "tls-monitor", "command": "openssl s_client -connect {target}:443 -servername {target} < /dev/null 2>/dev/null | openssl x509 -noout -dates -subject -issuer",
                  "description": "Monitor TLS certificate health", "depends_on": ["bt-2"]},
                 {"id": "bt-4", "name": "Resource Monitoring", "skill": "security-dashboard",
-                 "tool": "resource-usage", "command": "nsoc-monitor resources --enable",
+                 "tool": "resource-usage", "command": "top -bn1",
                  "description": "Monitor system resource usage", "requires_approval_in_live": False},
             ]
         },
@@ -297,7 +298,7 @@ class NSOCEngine:
             raise ValueError(f"Step {step_id} not found")
 
         for dep_id in step.depends_on:
-            dep_results = [r for r in workflow.results if r.tool == dep_id]
+            dep_results = [r for r in workflow.results if r.step_id == dep_id]
             if not dep_results:
                 return OperationResult(tool=step.tool, command=step.command, stdout="",
                     stderr=f"Dependency {dep_id} not completed", returncode=-1, risk_level="error")
@@ -343,7 +344,7 @@ class NSOCEngine:
         stdout, findings, risk = sim_func(step.command)
         await asyncio.sleep(1)
         return OperationResult(tool=step.tool, command=step.command, stdout=stdout,
-            stderr="", returncode=0, findings=findings, risk_level=risk)
+            stderr="", returncode=0, findings=findings, risk_level=risk, step_id=step.id)
 
     async def _execute_live(self, step: WorkflowStep) -> OperationResult:
         try:
@@ -354,10 +355,11 @@ class NSOCEngine:
             risk = self._assess_risk(findings)
             return OperationResult(tool=step.tool, command=step.command,
                 stdout=stdout.decode(), stderr=stderr.decode(),
-                returncode=proc.returncode or 0, findings=findings, risk_level=risk)
+                returncode=proc.returncode or 0, findings=findings, risk_level=risk,
+                step_id=step.id)
         except Exception as e:
             return OperationResult(tool=step.tool, command=step.command,
-                stdout="", stderr=str(e), returncode=-1, risk_level="error")
+                stdout="", stderr=str(e), returncode=-1, risk_level="error", step_id=step.id)
 
     def _adapt_by_personality(self, result: OperationResult) -> str:
         style = self.personality_config.get("communication_style", "technical")

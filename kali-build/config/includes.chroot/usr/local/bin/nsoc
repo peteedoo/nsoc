@@ -1,0 +1,12 @@
+#!/bin/sh
+# NSOC launcher
+# Thin wrapper so `nsoc ...` works from anywhere on the live system.
+# Forwards all arguments to the NSOC CLI.
+NSOC_HOME="${NSOC_HOME:-/opt/nsoc}"
+
+if [ ! -f "$NSOC_HOME/cli/nsoc.py" ]; then
+    echo "nsoc: cannot find NSOC at $NSOC_HOME" >&2
+    exit 1
+fi
+
+exec python3 "$NSOC_HOME/cli/nsoc.py" "$@"
