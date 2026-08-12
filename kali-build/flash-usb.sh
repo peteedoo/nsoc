@@ -49,12 +49,27 @@ esac
 
 DEV_BASE="$(basename "$DEV")"
 
-# Refuse the disk that hosts the running root filesystem.
-ROOT_SRC="$(findmnt -n -o SOURCE / 2>/dev/null || true)"
-ROOT_DISK="$(lsblk -no PKNAME "$ROOT_SRC" 2>/dev/null | head -n1 || true)"
-if [ -n "$ROOT_DISK" ] && [ "$ROOT_DISK" = "$DEV_BASE" ]; then
-    die "$DEV hosts the running system root filesystem. Refusing."
-fi
+# Resolve every *physical* disk that ultimately backs a given mountpoint,
+# walking through any LVM / LUKS / RAID / btrfs mapper layers. `lsblk -s`
+# inverts the tree so a mapper device's rows include its parent disks; we
+# keep only TYPE==disk. This is far stronger than checking PKNAME once,
+# which returns the mapper's immediate parent, not the real disk.
+backing_disks() {
+    mnt="$1"
+    src="$(findmnt -n -o SOURCE "$mnt" 2>/dev/null || true)"
+    [ -n "$src" ] || return 0
+    lsblk -s -nrpo NAME,TYPE "$src" 2>/dev/null | awk '$2=="disk"{print $1}'
+}
+
+# Refuse if the target disk backs any critical running-system filesystem,
+# resolving through mapper layers so LVM/LUKS/RAID roots are caught too.
+for critical in / /boot /boot/efi /home /var /usr; do
+    for disk in $(backing_disks "$critical"); do
+        if [ "$disk" = "$DEV" ] || [ "$(basename "$disk")" = "$DEV_BASE" ]; then
+            die "$DEV backs the running system's $critical filesystem. Refusing."
+        fi
+    done
+done
 
 # Warn loudly if the device is not flagged removable.
 RM_FLAG="$(lsblk -dno RM "$DEV" 2>/dev/null | head -n1 || echo 0)"

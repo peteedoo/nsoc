@@ -29,8 +29,12 @@ REPO_ROOT="$(cd "$HERE/.." && pwd)"
 VARIANT="xfce"                 # kali desktop flavour (xfce|gnome|kde|...)
 ARCH="$(dpkg --print-architecture 2>/dev/null || echo amd64)"
 DISTRIBUTION="kali-rolling"
-LBC_REPO="https://gitlab.com/kali/build-scripts/live-build-config.git"
+LBC_REPO="${LBC_REPO:-https://gitlab.com/kali/build-scripts/live-build-config.git}"
 LBC_DIR="$HERE/live-build-config"
+# Pin the upstream live-build-config to a known ref (branch, tag, or full
+# commit SHA). Override with --lbc-ref or the LBC_REF env var to pin a
+# specific reviewed commit for reproducible, verifiable builds.
+LBC_REF="${LBC_REF:-main}"
 DO_CLEAN=0
 
 while [ $# -gt 0 ]; do
@@ -38,6 +42,7 @@ while [ $# -gt 0 ]; do
         --variant)  VARIANT="$2"; shift 2 ;;
         --arch)     ARCH="$2"; shift 2 ;;
         --distribution) DISTRIBUTION="$2"; shift 2 ;;
+        --lbc-ref)  LBC_REF="$2"; shift 2 ;;
         --clean)    DO_CLEAN=1; shift ;;
         -h|--help)
             # Print the contiguous leading comment block (skip the shebang).
@@ -79,11 +84,22 @@ if [ "$DO_CLEAN" -eq 1 ] && [ -d "$LBC_DIR" ]; then
 fi
 
 if [ ! -d "$LBC_DIR/.git" ]; then
-    log "Cloning Kali live-build-config"
-    git clone --depth 1 "$LBC_REPO" "$LBC_DIR"
+    log "Cloning Kali live-build-config ($LBC_REPO @ $LBC_REF)"
+    # Fetch only the pinned ref. Works for a branch, tag, or full commit SHA.
+    git clone --no-checkout "$LBC_REPO" "$LBC_DIR"
+    if ! git -C "$LBC_DIR" checkout --quiet "$LBC_REF"; then
+        git -C "$LBC_DIR" fetch --quiet origin "$LBC_REF"
+        git -C "$LBC_DIR" checkout --quiet FETCH_HEAD
+    fi
 else
     log "Reusing existing live-build-config at $LBC_DIR"
 fi
+
+# Record exactly what upstream code will run, so a build is auditable and
+# reproducible. apt/live-build themselves verify the Kali archive via the
+# signed kali-archive-keyring; this pin covers the build tooling on top.
+LBC_HEAD="$(git -C "$LBC_DIR" rev-parse HEAD 2>/dev/null || echo unknown)"
+log "Using live-build-config commit: $LBC_HEAD"
 
 COMMON="$LBC_DIR/kali-config/common"
 [ -d "$COMMON" ] || die "Unexpected live-build-config layout: $COMMON not found"
@@ -106,12 +122,27 @@ log "Staging NSOC source into the image (/opt/nsoc)"
 NSOC_DEST="$COMMON/includes.chroot/opt/nsoc"
 rm -rf "$NSOC_DEST"
 mkdir -p "$NSOC_DEST"
-rsync -a --delete \
-    --exclude '.git' \
-    --exclude 'kali-build' \
-    --exclude 'node_modules' \
-    --exclude 'dashboard/dist' \
-    "$REPO_ROOT"/ "$NSOC_DEST"/
+
+# Ship ONLY version-controlled files. Using `git archive` means untracked
+# working-tree files — .env, credentials, SSH keys, scan output — can never
+# be baked into a world-readable, distributable ISO. The build tooling in
+# kali-build/ is not needed inside the image, so it is excluded.
+if git -C "$REPO_ROOT" rev-parse --git-dir >/dev/null 2>&1; then
+    git -C "$REPO_ROOT" archive --format=tar HEAD \
+        | tar -x -C "$NSOC_DEST" --exclude='kali-build'
+else
+    warn "$REPO_ROOT is not a git checkout; falling back to a filtered copy."
+    warn "Review the staged tree for secrets before distributing the ISO."
+    rsync -a --delete \
+        --exclude '.git' \
+        --exclude 'kali-build' \
+        --exclude 'node_modules' \
+        --exclude 'dashboard/dist' \
+        --exclude '.env' --exclude '.env.*' \
+        --exclude '*.pem' --exclude '*.key' --exclude 'id_rsa*' \
+        --exclude '*.p12' --exclude '*.pfx' \
+        "$REPO_ROOT"/ "$NSOC_DEST"/
+fi
 
 # --------------------------------------------------------------------------
 # Build

@@ -32,11 +32,21 @@ if [ -f "$NSOC_HOME/requirements.txt" ]; then
 fi
 
 # --- Dashboard build (optional) ---------------------------------------
-# Only build if the project provides a package.json with a build script.
+# Only build if the project ships a package.json. Prefer a reproducible,
+# lockfile-pinned install (`npm ci`) and disable package lifecycle scripts
+# (--ignore-scripts) so a compromised transitive dependency cannot run
+# arbitrary code as root while building the image. If there is no lockfile
+# we skip the build rather than pull unpinned dependencies into the ISO.
 if [ -f "$NSOC_HOME/dashboard/package.json" ]; then
-    echo "I: [nsoc] building dashboard"
-    ( cd "$NSOC_HOME/dashboard" && npm install --no-audit --no-fund && npm run build ) || \
-        echo "W: [nsoc] dashboard build failed (continuing without prebuilt dist)"
+    if [ -f "$NSOC_HOME/dashboard/package-lock.json" ]; then
+        echo "I: [nsoc] building dashboard (npm ci, scripts disabled)"
+        ( cd "$NSOC_HOME/dashboard" && \
+          npm ci --no-audit --no-fund --ignore-scripts && \
+          npm run build ) || \
+            echo "W: [nsoc] dashboard build failed (continuing without prebuilt dist)"
+    else
+        echo "W: [nsoc] no package-lock.json; skipping dashboard build to avoid unpinned deps"
+    fi
 fi
 
 # --- Login banner ------------------------------------------------------
